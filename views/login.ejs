@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Login - Inventaris Baterai</title>
+    <%- include('partials/head') %>
+</head>
+<body class="login-page">
+    <main class="login-shell">
+        <section class="login-panel">
+            <div class="login-brand">
+                <div class="login-icon">
+                    <i class="bi bi-battery-charging"></i>
+                </div>
+                <div>
+                    <h1>Inventaris Baterai</h1>
+                    <p>Masuk sesuai role kamu: <strong>Owner</strong>, <strong>Gudang</strong>, atau <strong>Operasional</strong>.</p>
+                </div>
+            </div>
+
+            <% if (error) { %>
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> <%= error %>
+                </div>
+            <% } %>
+                        
+            <form action="/login" method="POST">
+                <input type="hidden" name="next" value="<%= next %>">
+                
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Masukkan username" required>
+                </div>
+            
+                <div class="mb-4">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Masukkan password" required>
+                </div>
+            
+                <button type="submit" class="btn btn-primary w-100">Masuk Dashboard</button>
+            </form>
+
+            <div class="mt-4 pt-3 border-top">
+                <p class="small text-muted mb-2"><i class="bi bi-shield-check"></i> Akses dibatasi berdasarkan role:</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-primary">Owner: Finansial &amp; kelola akun</span>
+                    <span class="badge bg-success">Gudang: Stok fisik</span>
+                    <span class="badge bg-warning text-dark">Operasional: Jual &amp; produksi</span>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

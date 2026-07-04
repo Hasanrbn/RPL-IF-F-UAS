@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Dashboard - Inventaris Baterai</title>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <%- include('partials/navbar', { activePage: 'dashboard' }) %>
+
+    <main class="container-fluid px-4 pb-5">
+        <%
+            /*
+             * Tentukan label dan deskripsi halaman sesuai role.
+             * admin  → tampilan penuh (finansial + semua aksi)
+             * gudang      → tampilan stok (tanpa finansial, tanpa penjualan)
+             * operasional → tampilan penjualan & produksi (tanpa finansial, tanpa manajemen stok)
+             */
+            const isOwner  = admin && admin.role === 'owner';
+            const isGudang = admin && admin.role === 'gudang';
+            const isOperasional  = admin && admin.role === 'operasional';
+
+            const pageSubtitle = isOwner
+                ? 'Pantau stok, nilai aset, penjualan, dan data produksi secara lengkap.'
+                : isGudang
+                ? 'Kelola penerimaan dan pengeluaran stok fisik gudang.'
+                : 'Proses penjualan barang dan kelola produksi.';
+
+            const pageEyebrow = isOwner ? 'Owner' : isGudang ? 'Staff Gudang' : 'Operasional';
+        %>
+
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow mb-1"><%= pageEyebrow %></p>
+                <h1>Dashboard Inventaris</h1>
+                <p class="text-muted mb-0"><%= pageSubtitle %></p>
+            </div>
+        </section>
+
+        <!-- ===== KARTU RINGKASAN ===== -->
+        <%
+        /*
+         * admin  → 4 kartu: Nilai Aset, Profit, Total Stok, Total Terjual
+         * gudang → 2 kartu: Total Stok, Total Terjual (tanpa finansial)
+         * operasional → 2 kartu: Total Stok (agar tahu ketersediaan), Total Terjual
+         */
+        %>
+        <section class="summary-grid mb-4">
+            <% if (isOwner) { %>
+                <div class="metric-card metric-blue">
+                    <span class="metric-label"><i class="bi bi-wallet2"></i> Nilai aset gudang</span>
+                    <strong>Rp <%= Number(summary.total_aset || 0).toLocaleString('id-ID') %></strong>
+                </div>
+                <div class="metric-card metric-green">
+                    <span class="metric-label"><i class="bi bi-graph-up-arrow"></i> Profit dari terjual</span>
+                    <strong>Rp <%= Number(summary.profit_nyata || 0).toLocaleString('id-ID') %></strong>
+                </div>
+            <% } %>
+            <div class="metric-card metric-slate">
+                <span class="metric-label"><i class="bi bi-box-seam"></i> Total stok tersedia</span>
+                <strong><%= Number(summary.total_stok || 0).toLocaleString('id-ID') %> pcs</strong>
+            </div>
+            <div class="metric-card metric-amber">
+                <span class="metric-label"><i class="bi bi-cart-check"></i> Total barang terjual</span>
+                <strong><%= Number(summary.total_terjual || 0).toLocaleString('id-ID') %> pcs</strong>
+            </div>
+        </section>
+
+        <!-- ===== PRODUK TERLARIS (owner + operasional) ===== -->
+        <%
+        /*
+         * gudang tidak perlu lihat top selling — fokusnya pada fisik stok.
+         * owner dan operasional perlu tahu produk apa yang paling laku.
+         */
+        %>
+        <% if (isOwner || isOperasional) { %>
+        <section class="content-panel mb-4">
+            <div class="panel-title">
+                <div>
+                    <h2><i class="bi bi-trophy-fill text-warning"></i> Produk Terlaris</h2>
+                    <p>Top 5 berdasarkan jumlah unit terjual.</p>
+                </div>
+            </div>
+            <div class="top-selling-grid">
+                <% if (top_selling.length > 0) { %>
+                    <% top_selling.forEach((item, index) => { %>
+                        <div class="rank-item">
+                            <span class="rank-number">#<%= index + 1 %></span>
+                            <strong><%= item.nama_barang %></strong>
+                            <span><%= Number(item.total_laku || 0).toLocaleString('id-ID') %> terjual</span>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <span>Belum ada data penjualan.</span>
+                    </div>
+                <% } %>
+            </div>
+        </section>
+        <% } %>
+
+        <!-- ===== FORM INPUT STOK MASUK (admin + gudang saja) ===== -->
+        <%
+        /*
+         * Operasional TIDAK bisa menambah stok — hanya menjual & produksi.
+         * Gudang bisa tambah stok tetapi TIDAK bisa kelola master barang.
+         * Admin bisa melakukan keduanya.
+         */
+        %>
+        <% if (isOwner || isGudang) { %>
+        <section class="content-panel mb-4">
+            <div class="panel-title">
+                <div>
+                    <h2><i class="bi bi-plus-square text-primary"></i> Input Stok Masuk</h2>
+                    <p>Catat barang yang baru diterima dari supplier.</p>
+                </div>
+                <% if (isOwner) { %>
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#formMaster">
+                        <i class="bi bi-tag"></i> Master Barang
+                    </button>
+                <% } %>
+            </div>
+
+            <% if (isOwner) { %>
+            <div class="collapse mb-3" id="formMaster">
+                <div class="alert alert-info py-2 mb-2 small">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Owner only:</strong> Tambah nama dan SKU baru ke katalog master barang.
+                </div>
+                <form action="/master/tambah" method="POST" class="utility-form">
+                    <div>
+                        <label class="form-label">Nama Barang Baru</label>
+                        <input type="text" name="nama_barang" class="form-control" placeholder="Contoh: BMS 3S 20A" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Kode SKU</label>
+                        <input type="text" name="kode_sku" class="form-control" placeholder="Contoh: BMS-3S-20A" required>
+                    </div>
+                    <div class="align-self-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check-lg"></i> Simpan Master
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <% } %>
+
+            <form action="/simpan" method="POST" class="row g-3 prevent-double-submit">
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Nama Barang</label>
+                    <select name="nama_barang" id="selectBarang" class="form-select" onchange="updateSKU()" required>
+                        <option value="">Pilih barang</option>
+                        <% data_master.forEach(m => { %>
+                            <option value="<%= m.nama_barang %>" data-sku="<%= m.kode_sku %>">
+                                <%= m.nama_barang %> (<%= m.kode_sku %>)
+                            </option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label">SKU</label>
+                    <input type="text" name="kode_sku" id="inputSKU" class="form-control readonly-field" readonly required>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Kondisi</label>
+                    <select name="kondisi" class="form-select">
+                        <option value="BAGUS">Bagus</option>
+                        <option value="RUSAK">Rusak</option>
+                    </select>
+                </div>
+                <div class="col-lg-1 col-md-4">
+                    <label class="form-label">Stok</label>
+                    <input type="number" name="stok" class="form-control" value="1" min="0" required>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <label class="form-label">Modal Total</label>
+                    <input type="number" name="modal" class="form-control" placeholder="0" min="0" required>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label">Harga Jual / pcs</label>
+                    <input type="number" name="harga_jual" class="form-control" placeholder="0" min="0" required>
+                </div>
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-plus-lg"></i> Tambah ke Gudang
+                    </button>
+                </div>
+            </form>
+        </section>
+        <% } %>
+
+        <!-- Info operasional: tidak bisa tambah stok -->
+        <% if (isOperasional) { %>
+        <div class="alert alert-info mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle-fill fs-5"></i>
+            <span>Sebagai Operasional, kamu hanya bisa memproses penjualan dan produksi. Untuk menambah stok, hubungi staff gudang.</span>
+        </div>
+        <% } %>
+
+        <!-- ===== TABEL STOK PER PERIODE ===== -->
+        <% if (Object.keys(data_per_bulan).length === 0) { %>
+            <section class="content-panel">
+                <div class="empty-state py-5">
+                    <i class="bi bi-box"></i>
+                    <span>Belum ada stok yang tercatat.</span>
+                </div>
+            </section>
+        <% } %>
+
+        <% for (const bulan in data_per_bulan) { %>
+            <section class="stock-period">
+                <div class="period-title">
+                    <h2><i class="bi bi-calendar3"></i> <%= bulan %></h2>
+                </div>
+                <div class="content-panel table-panel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 warehouse-table">
+                            <thead>
+                                <tr>
+                                    <th>Waktu</th>
+                                    <th>Barang</th>
+                                    <th>Kondisi</th>
+                                    <th class="text-end">Stok Awal</th>
+                                    <th class="text-end">Sisa</th>
+                                    <% if (isOwner) { %>
+                                        <th class="text-end">Modal</th>
+                                        <th class="text-end">Harga Jual</th>
+                                        <th class="text-end">Profit Terjual</th>
+                                    <% } else if (isOperasional) { %>
+                                        <th class="text-end">Harga Jual</th>
+                                    <% } %>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% data_per_bulan[bulan].forEach(item => { %>
+                                    <%
+                                        const stokAwal      = Number(item.stok_awal) || 1;
+                                        const modalTotal    = Number(item.modal) || 0;
+                                        const hargaJual     = Number(item.harga_jual) || 0;
+                                        const jumlahTerjual = Number(item.jumlah_terjual) || 0;
+                                        const modalPerPcs   = modalTotal / stokAwal;
+                                        const profit        = (hargaJual - modalPerPcs) * jumlahTerjual;
+                                        const stokKosong    = Number(item.stok) <= 0;
+                                    %>
+                                    <tr class="<%= stokKosong ? 'stock-empty' : '' %>">
+                                        <td class="text-muted small">
+                                            <strong><%= new Date(item.waktu_input).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %></strong><br>
+                                            <span><%= new Date(item.waktu_input).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %> WIB</span>
+                                        </td>
+                                        <td>
+                                            <div class="item-name"><%= item.nama_barang %></div>
+                                            <span class="sku-chip"><%= item.kode_sku %></span>
+                                            <% if (isOwner) { %>
+                                                <%
+                                                    // Link hapus master barang (admin saja)
+                                                %>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <span class="status-pill <%= item.kondisi === 'RUSAK' ? 'status-danger' : 'status-good' %>">
+                                                <%= item.kondisi %>
+                                            </span>
+                                        </td>
+                                        <td class="text-end"><%= Number(item.stok_awal || 0).toLocaleString('id-ID') %></td>
+                                        <td class="text-end">
+                                            <span class="stock-count <%= stokKosong ? 'text-danger' : '' %>"><%= Number(item.stok || 0).toLocaleString('id-ID') %></span>
+                                        </td>
+
+                                        <% if (isOwner) { %>
+                                            <td class="text-end">Rp <%= modalTotal.toLocaleString('id-ID') %></td>
+                                            <td class="text-end fw-semibold">Rp <%= hargaJual.toLocaleString('id-ID') %></td>
+                                            <td class="text-end">
+                                                <span class="<%= profit > 0 ? 'text-success' : profit < 0 ? 'text-danger' : 'text-muted' %> fw-semibold">
+                                                    Rp <%= Number(profit).toLocaleString('id-ID') %>
+                                                </span>
+                                                <div class="small text-muted"><%= jumlahTerjual %> terjual</div>
+                                            </td>
+                                        <% } else if (isOperasional) { %>
+                                            <td class="text-end fw-semibold">Rp <%= hargaJual.toLocaleString('id-ID') %></td>
+                                        <% } %>
+
+                                        <td>
+                                            <div class="action-cell">
+                                                <%# Tombol Jual: owner + operasional %>
+                                                <% if (isOwner || isOperasional) { %>
+                                                    <form action="/jual/<%= item.id %>" method="POST" class="sell-form">
+                                                        <input type="number" name="jumlah_jual" value="1" min="1" max="<%= item.stok %>" class="form-control form-control-sm" <%= stokKosong ? 'disabled' : '' %>>
+                                                        <button type="submit" class="btn btn-sm btn-success" title="Catat penjualan" <%= stokKosong ? 'disabled' : '' %>>
+                                                            <i class="bi bi-cart-check"></i>
+                                                        </button>
+                                                    </form>
+                                                <% } %>
+
+                                                <%# Tombol Hapus Stok: admin + gudang %>
+                                                <% if (isOwner || isGudang) { %>
+                                                    <form action="/stok/hapus/<%= item.id %>" method="POST">
+                                                        <button type="submit"
+                                                                onclick="return confirm('Hapus stok <%= item.nama_barang %> dari dashboard? Riwayat transaksi tetap tersimpan.');"
+                                                                class="btn btn-sm btn-outline-danger"
+                                                                title="Hapus stok">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                <% } %>
+
+                                                <%# Jika operasional dan stok kosong: tampilkan info %>
+                                                <% if (isOperasional && stokKosong) { %>
+                                                    <span class="text-danger small">Stok habis</span>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <%# Hapus master: hanya admin, di bawah tabel per periode %>
+                    <% if (isOwner) { %>
+                    <div class="panel-footer-admin">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i>
+                            Untuk menghapus master barang dari katalog:
+                            <% data_master.forEach(m => { %>
+                                <a href="/master/hapus/<%= m.id %>"
+                                   onclick="return confirm('Hapus master barang <%= m.nama_barang %> dari katalog?');"
+                                   class="badge bg-secondary text-decoration-none ms-1">
+                                    <i class="bi bi-x"></i> <%= m.nama_barang %>
+                                </a>
+                            <% }) %>
+                        </small>
+                    </div>
+                    <% } %>
+                </div>
+            </section>
+        <% } %>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

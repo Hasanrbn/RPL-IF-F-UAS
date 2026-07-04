@@ -1,0 +1,606 @@
+/**
+ * Tampilan global Sistem Inventaris Baterai.
+ */
+
+:root {
+    --page-bg: #f4f6f8;
+    --panel-bg: #ffffff;
+    --ink: #18212f;
+    --muted: #697586;
+    --line: #dbe2ea;
+    --blue: #2563eb;
+    --green: #16803c;
+    --amber: #b7791f;
+    --red: #c24136;
+    --nav: #172033;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--page-bg);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.app-navbar {
+    background: var(--nav);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+}
+
+.navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+    font-weight: 700;
+}
+
+.navbar-brand:hover {
+    color: #fff;
+}
+
+.navbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.page-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+}
+
+.page-heading h1 {
+    margin: 0;
+    font-size: 1.65rem;
+    font-weight: 750;
+    letter-spacing: 0;
+}
+
+.eyebrow {
+    color: var(--blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.metric-card,
+.content-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.metric-card {
+    display: grid;
+    gap: 0.55rem;
+    padding: 1rem;
+}
+
+.metric-card strong {
+    font-size: 1.35rem;
+    line-height: 1.2;
+}
+
+.metric-label {
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.metric-blue {
+    border-left: 4px solid var(--blue);
+}
+
+.metric-green {
+    border-left: 4px solid var(--green);
+}
+
+.metric-slate {
+    border-left: 4px solid #475569;
+}
+
+.metric-amber {
+    border-left: 4px solid var(--amber);
+}
+
+.content-panel {
+    padding: 1rem;
+}
+
+.table-panel {
+    padding: 0;
+    overflow: hidden;
+}
+
+.panel-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.panel-title h2,
+.period-title h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 750;
+}
+
+.panel-title p {
+    margin: 0.25rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.top-selling-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.rank-item {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fbfcfe;
+}
+
+.rank-number,
+.rank-item span:last-child,
+.small,
+.text-muted {
+    color: var(--muted) !important;
+}
+
+.rank-number {
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.utility-form {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr 180px;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.form-label {
+    color: #344054;
+    font-size: 0.86rem;
+    font-weight: 650;
+}
+
+.form-control,
+.form-select,
+.input-group-text {
+    border-color: #cfd8e3;
+    border-radius: 8px;
+}
+
+.input-group .form-control {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.input-group-text {
+    background: #eef2f6;
+    color: #475467;
+}
+
+.readonly-field {
+    background: #eef2f6;
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 650;
+}
+
+.stock-period {
+    margin-top: 1.5rem;
+}
+
+.period-title {
+    margin-bottom: 0.6rem;
+}
+
+.warehouse-table {
+    min-width: 980px;
+}
+
+.warehouse-table th {
+    padding: 0.8rem 0.9rem;
+    background: #eef2f6;
+    color: #344054;
+    font-size: 0.76rem;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.warehouse-table td {
+    padding: 0.78rem 0.9rem;
+    border-color: #e7edf3;
+    font-size: 0.9rem;
+}
+
+.item-name {
+    font-weight: 750;
+}
+
+.sku-chip,
+.status-pill,
+.activity-badge,
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.sku-chip {
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.45rem;
+    background: #edf2f7;
+    color: #475569;
+}
+
+.status-pill,
+.activity-badge,
+.count-badge {
+    padding: 0.38rem 0.55rem;
+}
+
+.status-good,
+.activity-in {
+    background: #e8f7ee;
+    color: var(--green);
+}
+
+.status-danger,
+.activity-out {
+    background: #fff1f0;
+    color: var(--red);
+}
+
+.activity-sale {
+    background: #e8f1ff;
+    color: var(--blue);
+}
+
+.activity-neutral {
+    background: #eef2f6;
+    color: #475569;
+}
+
+.stock-count {
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.stock-empty td {
+    background: #fff8f7;
+}
+
+.action-cell,
+.sell-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+.sell-form input {
+    width: 72px;
+}
+
+.empty-state {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    color: var(--muted);
+}
+
+.empty-state i {
+    font-size: 1.5rem;
+}
+
+.responsible-person {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.responsible-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.45rem;
+    border-radius: 999px;
+    background: #eef2f6;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.login-page {
+    background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(22, 128, 60, 0.08)),
+        var(--page-bg);
+}
+
+.login-shell {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 1.25rem;
+}
+
+.login-panel {
+    width: min(100%, 440px);
+    padding: 1.4rem;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+}
+
+.login-brand {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.login-icon {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    flex: 0 0 48px;
+    border-radius: 8px;
+    background: #e8f1ff;
+    color: var(--blue);
+    font-size: 1.45rem;
+}
+
+.login-brand h1 {
+    margin: 0;
+    font-size: 1.45rem;
+    font-weight: 800;
+}
+
+.login-brand p:last-child {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.login-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.production-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.production-section {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem;
+    background: #fbfcfe;
+}
+
+.production-section h3 {
+    margin-bottom: 0.85rem;
+    font-size: 1rem;
+    font-weight: 750;
+}
+
+.komponen-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 96px 42px;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+
+.icon-button {
+    width: 42px;
+    min-width: 42px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+}
+
+@media (max-width: 992px) {
+    .summary-grid,
+    .top-selling-grid,
+    .production-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .utility-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .app-navbar .container-fluid,
+    .page-heading,
+    .panel-title {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .navbar-actions {
+        width: 100%;
+    }
+
+    .navbar-actions .btn {
+        flex: 1;
+    }
+
+    .summary-grid,
+    .top-selling-grid,
+    .production-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .komponen-row {
+        grid-template-columns: 1fr 82px 42px;
+    }
+}
+
+/* ======================================================
+   ROLE BADGE — Customer Segment Indicator in Navbar
+   ====================================================== */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+/* owner → biru tua */
+.role-badge-owner {
+    background: rgba(37, 99, 235, 0.25);
+    color: #bfdbfe;
+    border-color: rgba(96, 165, 250, 0.4);
+}
+
+/* gudang → hijau */
+.role-badge-gudang {
+    background: rgba(5, 150, 105, 0.25);
+    color: #a7f3d0;
+    border-color: rgba(52, 211, 153, 0.4);
+}
+
+/* operasional → amber */
+.role-badge-operasional {
+    background: rgba(217, 119, 6, 0.25);
+    color: #fde68a;
+    border-color: rgba(251, 191, 36, 0.4);
+}
+
+/* Footer panel owner di bawah tabel */
+.panel-footer-admin {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    background: rgba(0,0,0,0.02);
+}
+
+/* ======================================================
+   HALAMAN KELOLA AKUN (fitur baru, khusus Owner)
+   ====================================================== */
+.status-toggle-form {
+    display: inline-block;
+}
+
+.user-row-inactive {
+    opacity: 0.55;
+}
+
+.role-select-badge {
+    min-width: 132px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 0.4rem 2rem 0.4rem 0.7rem;
+    border-radius: 6px;
+    border: 1.5px solid #cfd8e3;
+    background-color: #ffffff;
+    color: #18212f;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.role-select-badge:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.16);
+}
+
+/* --- Modifikasi Warna Stroke & Font per Role (Lebih Solid & Jelas) --- */
+
+/* Owner (Biru) */
+.role-select-badge.role-badge-owner {
+    border-color: #2563eb !important;
+    color: #1d4ed8 !important;
+    background-color: #f0f5ff;
+}
+
+/* Gudang (Hijau) */
+.role-select-badge.role-badge-gudang {
+    border-color: #16803c !important;
+    color: #116630 !important;
+    background-color: #f4fbf7;
+}
+
+/* Operasional (Amber/Kuning Tua) */
+.role-select-badge.role-badge-operasional {
+    border-color: #b7791f !important;
+    color: #8f5d13 !important;
+    background-color: #fdfaf2;
+}
+
+/* Gaya khusus saat dinonaktifkan (Akun Sendiri) */
+.role-select-badge:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+    background-color: #eef2f6 !important;
+    border-color: #cbd5e1 !important;
+    color: #475569 !important;
+}

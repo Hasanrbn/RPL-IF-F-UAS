@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Kelola Akun - Inventaris Baterai</title>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <%- include('partials/navbar', { activePage: 'akun' }) %>
+
+    <main class="container-fluid px-4 pb-5">
+        <section class="page-heading">
+            <div>
+                <p class="eyebrow mb-1">Owner</p>
+                <h1>Kelola akun user</h1>
+                <p class="text-muted mb-0">Buat, nonaktifkan, dan atur role staff gudang &amp; operasional di sini.</p>
+            </div>
+            <span class="count-badge"><%= users.length %> akun</span>
+        </section>
+
+        <section class="content-panel mb-4">
+            <div class="panel-title">
+                <div>
+                    <h2><i class="bi bi-person-plus-fill text-primary"></i> Tambah akun baru</h2>
+                    <p>Buat akses login untuk staff gudang atau operasional.</p>
+                </div>
+            </div>
+            <form action="/akun/tambah" method="POST" class="row g-3">
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Nama lengkap</label>
+                    <input type="text" name="nama_lengkap" class="form-control" placeholder="Contoh: Budi Santoso" required>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="budi.gudang" required>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Min. 6 karakter" minlength="6" required>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <label class="form-label">Role</label>
+                    <select name="role" class="form-select" required>
+                        <option value="">Pilih role</option>
+                        <option value="owner">Owner</option>
+                        <option value="gudang">Gudang</option>
+                        <option value="operasional">Operasional</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-plus-lg"></i> Buat akun
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="content-panel table-panel">
+            <div class="panel-title px-3 pt-3">
+                <div>
+                    <h2><i class="bi bi-people-fill"></i> Daftar akun</h2>
+                    <p>Atur role dan status keaktifan setiap akun.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 warehouse-table">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (users.length === 0) { %>
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state py-5">
+                                        <i class="bi bi-inbox"></i>
+                                        <span>Belum ada akun terdaftar.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% users.forEach(u => { %>
+                            <%
+                                const isMe = admin && admin.id === u.id;
+                                const roleBadge = u.role === 'owner' ? 'role-badge-owner' : u.role === 'gudang' ? 'role-badge-gudang' : 'role-badge-operasional';
+                                const nextStatus = u.status === 'Aktif' ? 'Nonaktif' : 'Aktif';
+                                const statusActionLabel = u.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan';
+                                const statusButtonClass = u.status === 'Aktif' ? 'btn-outline-danger' : 'btn-outline-success';
+                                const statusIcon = u.status === 'Aktif' ? 'bi-pause-fill' : 'bi-play-fill';
+                                const statusConfirmMessage = `${statusActionLabel} akun ${u.nama_lengkap}?`;
+                            %>
+                            <tr class="<%= u.status !== 'Aktif' ? 'user-row-inactive' : '' %>">
+                                <td>
+                                    <div class="item-name">
+                                        <%= u.nama_lengkap %>
+                                        <% if (isMe) { %><span class="sku-chip">Anda</span><% } %>
+                                    </div>
+                                </td>
+                                <td><span class="text-muted">@<%= u.username %></span></td>
+                                <td>
+                                    <form action="/akun/role/<%= u.id %>" method="POST" class="status-toggle-form">
+                                        <select name="role" class="role-select-badge <%= roleBadge %>" onchange="this.form.submit()" <%= isMe ? 'disabled' : '' %>>
+                                            <option value="owner" <%= u.role === 'owner' ? 'selected' : '' %>>Owner</option>
+                                            <option value="gudang" <%= u.role === 'gudang' ? 'selected' : '' %>>Gudang</option>
+                                            <option value="operasional" <%= u.role === 'operasional' ? 'selected' : '' %>>Operasional</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td class="text-center">
+                                    <span class="status-pill <%= u.status === 'Aktif' ? 'status-good' : 'status-danger' %>">
+                                        <i class="bi <%= u.status === 'Aktif' ? 'bi-check-circle' : 'bi-pause-circle' %>"></i>
+                                        <%= u.status %>
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <% if (!isMe) { %>
+                                        <form action="/akun/status/<%= u.id %>" method="POST" class="status-toggle-form">
+                                            <input type="hidden" name="status" value="<%= nextStatus %>">
+                                            <button type="submit"
+                                                class="btn btn-sm <%= statusButtonClass %>"
+                                                onclick="return confirm('<%= statusConfirmMessage %>');">
+                                                <i class="bi <%= statusIcon %>"></i>
+                                                <%= statusActionLabel %>
+                                            </button>
+                                        </form>
+                                    <% } else { %>
+                                        <span class="text-muted small">Akun sendiri</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

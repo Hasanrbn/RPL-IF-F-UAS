@@ -1,0 +1,71 @@
+<%
+/*
+ * Navbar dinamis berbasis role pengguna (v2).
+ *
+ * Role        | Dashboard | Riwayat | Produksi | Kelola Akun
+ * ------------+-----------+---------+----------+------------
+ * owner       |    v      |    v    |    v     |     v
+ * gudang      |    v      |    v    |    x     |     x
+ * operasional |    v      |    v    |    v     |     x
+ */
+const roleLabel = {
+    owner: 'Owner',
+    gudang: 'Staff Gudang',
+    operasional: 'Operasional',
+};
+const roleBadgeClass = {
+    owner: 'role-badge-owner',
+    gudang: 'role-badge-gudang',
+    operasional: 'role-badge-operasional',
+};
+const currentRole = (admin && admin.role) ? admin.role : '';
+const currentRoleLabel = roleLabel[currentRole] || currentRole;
+const currentRoleBadge = roleBadgeClass[currentRole] || '';
+%>
+<nav class="navbar navbar-expand-lg app-navbar mb-4">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-battery-charging"></i>
+            <span>Inventaris Baterai</span>
+        </a>
+        <div class="navbar-actions">
+            <% if (typeof admin !== 'undefined' && admin) { %>
+                <span class="admin-chip">
+                    <i class="bi bi-person-circle"></i>
+                    <span><%= admin.username %></span>
+                </span>
+                <span class="role-badge <%= currentRoleBadge %>" title="Role aktif: <%= currentRoleLabel %>">
+                    <%= currentRoleLabel %>
+                </span>
+            <% } %>
+
+            <a href="/" class="btn btn-sm <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'btn-light' : 'btn-outline-light' %>">
+                <i class="bi bi-grid-1x2"></i> Dashboard
+            </a>
+
+            <a href="/history" class="btn btn-sm <%= typeof activePage !== 'undefined' && activePage === 'history' ? 'btn-light' : 'btn-outline-light' %>">
+                <i class="bi bi-clock-history"></i> Riwayat
+            </a>
+
+            <% if (admin && (admin.role === 'owner' || admin.role === 'operasional')) { %>
+                <a href="/produksi" class="btn btn-sm <%= typeof activePage !== 'undefined' && activePage === 'produksi' ? 'btn-warning' : 'btn-outline-warning' %>">
+                    <i class="bi bi-tools"></i> Produksi
+                </a>
+            <% } %>
+
+            <% if (admin && admin.role === 'owner') { %>
+                <a href="/akun" class="btn btn-sm <%= typeof activePage !== 'undefined' && activePage === 'akun' ? 'btn-light' : 'btn-outline-light' %>">
+                    <i class="bi bi-people"></i> Kelola Akun
+                </a>
+            <% } %>
+
+            <% if (typeof admin !== 'undefined' && admin) { %>
+                <form action="/logout" method="POST" class="m-0">
+                    <button type="submit" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-box-arrow-right"></i> Keluar
+                    </button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+</nav>
